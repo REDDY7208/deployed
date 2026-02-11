@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx-prod
+    volumes:
+      - ../nginx/test:/etc/nginx/conf.d
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - sos
+    restart: always
+
+networks:
+  sos:
+    driver: bridge

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  main-domain-ui:
+    image: :test
+    container_name: main-domain
+    networks:
+      - sos
+    ports:
+      - "3000:3000"
+    volumes:
+      - main-domain-ui_data:/app/data
+    env_file:
+      - ../Frontend/.env.test
+
+volumes:
+  main-domain-ui_data:
+
+
+networks:
+  sos:
+    driver: bridge

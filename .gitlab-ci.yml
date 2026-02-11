@@ -1,0 +1,129 @@
+stages:
+  - deploy_test
+  - deploy_prod
+
+deploy-test-job:
+  stage: deploy_test
+  tags:
+    - sos
+  variables:
+    COMPOSE_HTTP_TIMEOUT: 300
+    DOCKER_CLIENT_TIMEOUT: 300
+  script:
+    - echo "Logging into the container registry for TEST..."
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+
+    - echo "Stopping and removing existing TEST containers..."
+    - docker-compose -f Docker-Compose-Test/docker-compose.frontend.yml -f Docker-Compose-Test/docker-compose.backend.yml -f Docker-Compose-Test/docker-compose.nginx.yml -f Docker-Compose-Test/docker-compose.ai.yml -f Docker-Compose-Test/docker-compose.kafka.yml down --remove-orphans
+
+    - echo "Pulling latest images..."
+    - docker-compose -f Docker-Compose-Test/docker-compose.frontend.yml -f Docker-Compose-Test/docker-compose.backend.yml -f Docker-Compose-Test/docker-compose.nginx.yml -f Docker-Compose-Test/docker-compose.ai.yml -f Docker-Compose-Test/docker-compose.kafka.yml pull
+
+    - echo "Starting TEST containers with latest images..."
+    - docker-compose -f Docker-Compose-Test/docker-compose.frontend.yml -f Docker-Compose-Test/docker-compose.backend.yml -f Docker-Compose-Test/docker-compose.nginx.yml -f Docker-Compose-Test/docker-compose.ai.yml -f Docker-Compose-Test/docker-compose.kafka.yml up -d --force-recreate --remove-orphans
+
+    - echo "Listing running containers..."
+    - docker ps -a
+
+    - echo "Cleaning up unused Docker images..."
+    # - docker image prune -af
+
+    - echo "Test deployment completed successfully."
+  only:
+    - main
+  when: manual
+  allow_failure: false
+
+# #
+# stages:
+#   - deploy_test
+
+# # ================= COMMON DOCKER LOGIN =================
+# .variables_template: &docker_login
+#   before_script:
+#     - echo "Logging into registry..."
+#     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+
+# # ================= FRONTEND =================
+# deploy-test-frontend:
+#   stage: deploy_test
+#   tags:
+#     - sos
+#   <<: *docker_login
+#   variables:
+#     COMPOSE_HTTP_TIMEOUT: "300"
+#     DOCKER_CLIENT_TIMEOUT: "300"
+#   script:
+#     - echo "Deploying FRONTEND..."
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.frontend.yml pull
+#     - docker-compose -f Docker-Compose-Test/docker-compose.frontend.yml down
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.frontend.yml up -d --force-recreate
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.frontend.yml ps
+#   only:
+#     - main
+#   when: manual
+
+# # ================= BACKEND =================
+# deploy-test-backend:
+#   stage: deploy_test
+#   tags:
+#     - sos
+#   <<: *docker_login
+#   variables:
+#     COMPOSE_HTTP_TIMEOUT: "300"
+#     DOCKER_CLIENT_TIMEOUT: "300"
+#   script:
+#     - echo "Deploying BACKEND..."
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.backend.yml pull
+#     - docker-compose -f Docker-Compose-Test/docker-compose.backend.yml down
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.backend.yml up -d --force-recreate
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.backend.yml ps
+#   only:
+#     - main
+#   when: manual
+
+# # ================= NGINX =================
+# deploy-test-nginx:
+#   stage: deploy_test
+#   tags:
+#     - sos
+#   <<: *docker_login
+#   variables:
+#     COMPOSE_HTTP_TIMEOUT: "300"
+#     DOCKER_CLIENT_TIMEOUT: "300"
+#   script:
+#     - echo "Deploying NGINX..."
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.nginx.yml pull
+#     - docker-compose -f Docker-Compose-Test/docker-compose.nginx.yml down
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.nginx.yml up -d --force-recreate
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.nginx.yml ps
+#   only:
+#     - main
+#   when: manual
+
+# # ================= AI (CRITICAL FIX) =================
+# deploy-test-ai:
+#   stage: deploy_test
+#   tags:
+#     - sos
+#   <<: *docker_login
+#   variables:
+#     COMPOSE_HTTP_TIMEOUT: "600"
+#     DOCKER_CLIENT_TIMEOUT: "600"
+#   script:
+#     - echo "Deploying AI..."
+
+#     # Pull first (prevents timeout)
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.ai.yml pull
+
+#     # Stop old containers
+#     - docker-compose -f Docker-Compose-Test/docker-compose.ai.yml down 
+
+#     # # Start AI services (non-blocking)
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.ai.yml up -d --force-recreate
+
+#     # # Show status
+#     # - docker-compose -f Docker-Compose-Test/docker-compose.ai.yml ps
+#   only:
+#     - main
+#   when: manual
