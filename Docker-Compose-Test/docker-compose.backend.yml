@@ -1,0 +1,44 @@
+
+version: '3.8'
+
+services:
+  auth-service:
+    image: auth-service:test 
+    container_name: auth-service
+    networks:
+      - enterprice-sedfiles
+    ports:
+      - "8000:8000"
+    volumes:
+      - auth-service_data:/app/data
+
+  core-service:
+    image: core-service:test
+    container_name: core-service
+    networks:
+      - enterprice-sedfiles
+    ports:
+      - "8001:8001"
+    volumes:
+      - core-service_data:/app/data
+
+  sub-service:
+    image: sub-service:test
+    container_name: sub-service
+    networks:
+      - enterprice-sedfiles
+    ports:
+      - "8002:8002"
+    volumes:
+      - sub-service_data:/app/data
+
+
+volumes:
+  core-service_data:
+  auth-service_data:
+  sub-service_data:
+
+
+networks:
+  enterprice-sedfiles:
+    driver: bridge

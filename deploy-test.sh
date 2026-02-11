@@ -15,16 +15,13 @@ echo "=========================================="
 
 echo "Stopping and removing existing TEST containers..."
 docker-compose -f Docker-Compose-Test/docker-compose.frontend.yml \
+               -f Docker-Compose-Test/docker-compose.backend.yml \
                -f Docker-Compose-Test/docker-compose.nginx.yml \
                down --remove-orphans
 
-echo "Pulling latest images..."
+echo "Starting TEST containers with local images..."
 docker-compose -f Docker-Compose-Test/docker-compose.frontend.yml \
-               -f Docker-Compose-Test/docker-compose.nginx.yml \
-               pull
-
-echo "Starting TEST containers with latest images..."
-docker-compose -f Docker-Compose-Test/docker-compose.frontend.yml \
+               -f Docker-Compose-Test/docker-compose.backend.yml \
                -f Docker-Compose-Test/docker-compose.nginx.yml \
                up -d --force-recreate --remove-orphans
 
