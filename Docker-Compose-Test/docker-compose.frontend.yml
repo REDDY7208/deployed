@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
   main-domain-ui:
-    image: :test
+    image: main-domain:test
     container_name: main-domain
     networks:
-      - sos
+      - enterprice-sedfiles
     ports:
       - "3000:3000"
     volumes:
@@ -18,5 +18,5 @@ volumes:
 
 
 networks:
-  sos:
+  enterprice-sedfiles:
     driver: bridge
